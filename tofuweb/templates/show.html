@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-md-12">
+    <table>
+      <tbody>
+        <tr>
+          <td>Input</td>
+          <td>{{ dataset.data_path }}</td>
+        </tr>
+        <tr>
+          <td>Flats</td>
+          <td>{{ dataset.flats_path }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

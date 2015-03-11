@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block body %}
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Raw datasets</h2>
+      <table class="table table-hover" data-sortable>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for dataset in raw_datasets %}
+          <tr>
+            <td><a href="/raw/show/{{ dataset.id }}">{{ dataset.name }}</a></td>
+            <td>
+              <div class="btn-group" role="group" aria-label="...">
+                <a class="btn btn-default btn-sm" title="Reconstruct" role="button" href="/raw/reconstruct/{{ dataset.id }}"><i class="fa fa-cogs"></i></a>
+                <a class="btn btn-default btn-sm" title="Edit" role="button" href="/raw/edit/{{ dataset.id }}"><i class="fa fa-pencil-square-o"></i></a>
+                <a class="btn btn-danger btn-sm" title="Remove" role="button" href="/raw/delete/{{ dataset.id }}"><i class="fa fa-remove"></i></a>
+            </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p><a class="btn btn-default" href="/raw/create" title="Add raw dataset"><i class="fa fa-plus-square"></i></a></p>
+
+      {% if recos %}
+      <h2>Reconstructions</h2>
+      <table class="table table-hover" data-sortable>
+        <thead>
+          <tr>
+            <th>Identifier</th>
+            <th>Dataset</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for reco in recos %}
+          <tr>
+            <td>{{ reco.id }}</td>
+            <td ng-app ng-init="running=1">
+              {% if reco.raw %}
+                <a href="/raw/show/{{ reco.raw.id }}">{{ reco.raw.name }}</a>
+              {% else %}
+                deleted
+              {% endif %}
+            </td>
+            <td>
+              {% if reco.done %}
+              <i class="fa fa-check-square"></i>
+              {% else %}
+              <div ng-init="stillRunning({{ reco.id }})">
+                <i ng-hide="loading.reco_{{ reco.id }}" class="fa fa-check-square ng-hide"></i>
+                <img ng-show="loading.reco_{{ reco.id }}" src="{{ url_for('static', filename='img/spinner.gif') }}"/>
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="btn-group" role="group" aria-label="...">
+                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Download" role="button" href="/reco/download/{{ reco.id }}"><i class="fa fa-download"></i></a>
+                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-danger btn-sm" title="Remove" role="button" href="/reco/delete/{{ reco.id }}"><i class="fa fa-remove"></i></a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!doctype html>
+<html ng-app="TofuApp">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" />
+    <script src="{{ url_for('static', filename='js/angular.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tofu.js') }}"></script>
+    <title>Tofu</title>
+  </head>
+  <body ng-controller="TofuController">
+    <div class="container">
+      <div class="page-header">
+        <h1>Tofu</h1>
+      </div>
+      {% block body %}{% endblock %}
+    </div>
+  </body>
+</html>
