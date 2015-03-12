@@ -1,8 +1,9 @@
 import os
+import time
 import multiprocessing
 from tofuweb import app, admin, db
-from tofuweb.models import Raw, Reconstruction
-from flask import request, render_template, redirect, url_for, jsonify, send_from_directory
+from tofuweb.models import Raw, Reconstruction, Surface
+from flask import request, render_template, redirect, url_for, jsonify, send_from_directory, send_file
 from flask.ext.admin.contrib.sqla import ModelView
 from wtforms import Form, TextField, FloatField, validators
 
@@ -13,6 +14,10 @@ admin.add_view(ModelView(Reconstruction, db.session))
 
 def reco_path(reco_dataset):
     return os.path.join('/tmp/recos/', str(reco_dataset.raw.id), str(reco_dataset.id))
+
+
+def texture_path(reco_dataset):
+    return os.path.join(reco_path(reco_dataset), 'textures', 'texture.jpg')
 
 
 class CreateForm(Form):
@@ -29,8 +34,7 @@ class RecoForm(Form):
 class RecoProcess(multiprocessing.Process):
 
     def __init__(self, dataset):
-        name = 'reco-{}'.format(dataset.raw.id)
-        super(RecoProcess, self).__init__(name=name)
+        super(RecoProcess, self).__init__()
         self.dataset = dataset
 
     def run(self):
@@ -54,6 +58,41 @@ class RecoProcess(multiprocessing.Process):
             self.dataset.time = time
             self.dataset.done = True
             db.session.commit()
+
+
+class SurfaceProcess(multiprocessing.Process):
+
+    def __init__(self, surface):
+        super(SurfaceProcess, self).__init__()
+        self.surface = surface
+
+    def run(self):
+        import vtk, vtk.io
+        path = reco_path(self.surface.reco)
+
+        reader = vtk.io.vtkTIFFReader()
+        reader.SetFileName(os.path.join(path, 'volume.tif'))
+        reader.Update()
+
+        threshold = vtk.vtkImageThreshold()
+        threshold.SetInputConnection(reader.GetOutputPort())
+        threshold.ThresholdByLower(400)
+        threshold.ReplaceInOn()
+        threshold.SetInValue(0)
+        threshold.ReplaceOutOn()
+        threshold.SetOutValue(1)
+        threshold.Update()
+
+        dmc = vtk.vtkDiscreteMarchingCubes()
+        dmc.SetInputConnection(threshold.GetOutputPort())
+        dmc.GenerateValues(1, 1, 1)
+        dmc.Update()
+
+        writer = vtk.vtkSTLWriter()
+        writer.SetInputConnection(dmc.GetOutputPort())
+        writer.SetFileTypeToBinary()
+        writer.SetFileName(os.path.join(path, 'mesh.stl'))
+        writer.Write()
 
 
 @app.route('/')
@@ -130,3 +169,27 @@ def download(dataset_id):
     dataset = Reconstruction.query.filter_by(id=dataset_id).first()
     path = os.path.abspath(reco_path(dataset))
     return send_from_directory(path, 'volume.tif', as_attachment=True)
+
+
+@app.route('/reco/render/<int:dataset_id>')
+def render(dataset_id):
+    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+    return render_template('render.html', dataset=dataset)
+
+
+@app.route('/reco/<int:dataset_id>/volume.stl')
+def get_mesh(dataset_id):
+    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+    path = os.path.abspath(reco_path(dataset))
+    return send_from_directory(path, 'volume.stl')
+
+
+@app.route('/reco/mesh/<int:dataset_id>')
+def generate_mesh(dataset_id):
+    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+
+    surface = Surface(dataset)
+    map_process = SurfaceProcess(surface)
+    map_process.start()
+
+    return jsonify(generating=True)

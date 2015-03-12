@@ -2,7 +2,7 @@ import os
 from flask.ext.script import Manager
 from flask.ext.migrate import MigrateCommand
 from tofuweb import app, db
-from tofuweb.models import Raw, Reconstruction
+from tofuweb.models import Raw, Reconstruction, Surface
 
 
 manager = Manager(app)

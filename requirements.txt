@@ -7,3 +7,4 @@ Flask-RESTful
 watchdog==0.8.3
 WTForms==2.0.2
 tofu==0.7
+VTK==5.8.0

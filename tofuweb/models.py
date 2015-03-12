@@ -1,6 +1,16 @@
 from tofuweb import db
 
 
+class Surface(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reco_id = db.Column(db.Integer, db.ForeignKey('reconstruction.id'))
+    reco = db.relationship('Reconstruction',
+            backref=db.backref('surfaces', lazy='dynamic'))
+
+    def __init__(self, reco, size=1024):
+        self.reco = reco
+
+
 class Reconstruction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     software = db.Column(db.String(128))
