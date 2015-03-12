@@ -6,6 +6,7 @@ class Reconstruction(db.Model):
     software = db.Column(db.String(128))
     axis = db.Column(db.Float)
     done = db.Column(db.Boolean)
+    time = db.Column(db.Float)
     raw_id = db.Column(db.Integer, db.ForeignKey('raw.id'))
     raw = db.relationship('Raw',
             backref=db.backref('reconstructions', lazy='dynamic'))

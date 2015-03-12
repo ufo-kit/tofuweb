@@ -39,10 +39,11 @@ class RecoProcess(multiprocessing.Process):
         params.flats = self.dataset.raw.flats_path
         params.output = output
         params.from_projections = True
-        reco.tomo(params)
-        app.logger.debug("Finished reconstruction")
+        time = reco.tomo(params)
+        app.logger.debug("Finished reconstruction in {}s".format(time))
 
         self.dataset.software = 'Tofu {}'.format(__version__)
+        self.dataset.time = time
         self.dataset.done = True
         db.session.commit()
 
