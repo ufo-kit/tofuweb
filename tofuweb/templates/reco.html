@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-md-12">
+    <dl class="dl-horizontal">
+      <dt>Software</dt>
+      <dd>{{ dataset.software }}</dd>
+      <dt>Origin</dt>
+      <dd><a href="/raw/show/{{ dataset.raw.id }}">{{ dataset.raw.name }}</a></dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

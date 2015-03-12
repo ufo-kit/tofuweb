@@ -3,6 +3,7 @@ from tofuweb import db
 
 class Reconstruction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    software = db.Column(db.String(128))
     axis = db.Column(db.Float)
     done = db.Column(db.Boolean)
     raw_id = db.Column(db.Integer, db.ForeignKey('raw.id'))

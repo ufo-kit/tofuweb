@@ -30,7 +30,7 @@ class RecoProcess(multiprocessing.Process):
         self.dataset = dataset
 
     def run(self):
-        from tofu import reco, config
+        from tofu import reco, config, __version__
         output = os.path.join(reco_path(self.dataset), 'volume.tif')
         app.logger.debug("Write output to {}".format(output))
         params = config.TomoParams().get_defaults()
@@ -41,6 +41,8 @@ class RecoProcess(multiprocessing.Process):
         params.from_projections = True
         reco.tomo(params)
         app.logger.debug("Finished reconstruction")
+
+        self.dataset.software = 'Tofu {}'.format(__version__)
         self.dataset.done = True
         db.session.commit()
 
@@ -91,6 +93,12 @@ def reconstruct(dataset_id):
     reco.start()
 
     return redirect(url_for('index'))
+
+
+@app.route('/reco/show/<int:dataset_id>')
+def show_reconstruction(dataset_id):
+    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+    return render_template('reco.html', dataset=dataset)
 
 
 @app.route('/reco/delete/<int:dataset_id>')
