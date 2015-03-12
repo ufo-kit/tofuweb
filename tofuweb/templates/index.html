@@ -55,9 +55,10 @@ $(document).ready(function() {
           <tr>
             <td>
               <div class="btn-group" role="group" aria-label="...">
+                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Render" role="button" href="/reco/render/{{ reco.id }}"><i class="fa fa-eye"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/show/{{ reco.id }}"><i class="fa fa-info-circle"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Download" role="button" href="/reco/download/{{ reco.id }}"><i class="fa fa-download"></i></a>
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-danger btn-sm" title="Remove" role="button" href="/reco/delete/{{ reco.id }}"><i class="fa fa-remove"></i></a>
+                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Remove" role="button" href="/reco/delete/{{ reco.id }}"><i class="fa fa-remove"></i></a>
               </div>
             </td>
             <td>
