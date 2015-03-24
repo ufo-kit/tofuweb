@@ -1,4 +1,10 @@
 {% extends "layout.html" %}
+{% macro render_field(field) %}
+  <div class="form-group">
+    <label class="control-label" for="name">{{ field.label }}</label>
+      {{ field(class="form-control") | safe }}
+  </div>
+{% endmacro %}
 {% block body %}
   <script>
 $(document).ready(function() {
@@ -10,6 +16,10 @@ $(document).ready(function() {
 
   $('#recoSubmit').click(function() {
     $('#recoForm').submit();
+  });
+
+  $('#createSubmit').click(function() {
+    $('#createForm').submit();
   });
 });
   </script>
@@ -38,7 +48,10 @@ $(document).ready(function() {
         {% endfor %}
         </tbody>
       </table>
-      <p><a class="btn btn-default" href="/raw/create" title="Add raw dataset"><i class="fa fa-plus-square"></i></a></p>
+      <button type="button" class="btn btn-default btn-sm"
+        data-toggle="modal" data-target="#createModal" title="Create dataset">
+      <i class="fa fa-plus-square"></i></button>
+      <!-- <p><a class="btn btn-default" href="/raw/create" title="Add raw dataset"><i class="fa fa-plus-square"></i></a></p> -->
 
       {% if recos %}
       <h3>Reconstructions</h3>
@@ -103,6 +116,29 @@ $(document).ready(function() {
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary" id="recoSubmit">Reconstruct</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="createModalLabel">Create dataset</h4>
+        </div>
+        <div class="modal-body">
+          <form id="createForm" action="/raw/create" method="post">
+            {{ render_field(create_form.name) }}
+            {{ render_field(create_form.radios) }}
+            {{ render_field(create_form.darks) }}
+            {{ render_field(create_form.flats) }}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="createSubmit">Create</button>
         </div>
       </div>
     </div>

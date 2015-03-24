@@ -78,7 +78,8 @@ class DownsizeProcess(multiprocessing.Process):
 def index():
     raw_datasets = Raw.query.all()
     reconstructions = Reconstruction.query.all()
-    data = dict(raw_datasets=raw_datasets, recos=reconstructions)
+    form = CreateForm(request.form)
+    data = dict(raw_datasets=raw_datasets, recos=reconstructions, create_form=form)
     return render_template('index.html', **data)
 
 
@@ -88,17 +89,16 @@ def show_raw_dataset(dataset_id):
     return render_template('show.html', dataset=dataset)
 
 
-@app.route('/raw/create', methods=['GET', 'POST'])
+@app.route('/raw/create', methods=['POST'])
 def create_raw_dataset():
     form = CreateForm(request.form)
 
-    if request.method == 'POST' and form.validate:
+    if form.validate:
         dataset = Raw(form.name.data, form.radios.data, darks=form.darks.data, flats=form.flats.data)
         db.session.add(dataset)
         db.session.commit()
-        return redirect(url_for('index'))
-    else:
-        return render_template('create.html', form=form)
+
+    return redirect(url_for('index'))
 
 
 @app.route('/raw/delete/<int:dataset_id>')
