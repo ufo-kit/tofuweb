@@ -4,7 +4,7 @@ from tofuweb import app, admin, db
 from tofuweb.models import Raw, Reconstruction
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory
 from flask.ext.admin.contrib.sqla import ModelView
-from wtforms import Form, TextField, validators
+from wtforms import Form, TextField, FloatField, validators
 
 
 admin.add_view(ModelView(Raw, db.session))
@@ -20,6 +20,10 @@ class CreateForm(Form):
     radios = TextField("Radios", [validators.Required()])
     darks = TextField("Darks")
     flats = TextField("Flats")
+
+
+class RecoForm(Form):
+    axis = FloatField("axis")
 
 
 class RecoProcess(multiprocessing.Process):
@@ -86,10 +90,11 @@ def delete_raw_dataset(dataset_id):
     return redirect(url_for('index'))
 
 
-@app.route('/raw/reconstruct/<int:dataset_id>')
+@app.route('/raw/reconstruct/<int:dataset_id>', methods=['POST'])
 def reconstruct(dataset_id):
+    form = RecoForm(request.form)
     dataset = Raw.query.filter_by(id=dataset_id).first()
-    reco_dataset = Reconstruction(dataset)
+    reco_dataset = Reconstruction(dataset, axis=form.axis.data)
     db.session.add(reco_dataset)
     db.session.commit()
 

@@ -5,23 +5,28 @@
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" />
     <script src="{{ url_for('static', filename='js/angular.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-1.11.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tofu.js') }}"></script>
     <title>Tofu</title>
   </head>
   <body ng-controller="TofuController">
 
-    <div class="container">
-      <nav class="navbar navbar-default">
-        <div class="container-fluid">
-          <div class="navbar-header">
-            <a class="navbar-brand" href="/"><span style="font-weight: bold;">TOFU</span></a>
-            <ul class="nav navbar-nav">
-              <li><a href="/">Data</a></li>
-              <li><a href="/">Reconstructions</a></li>
-            </ul>
+    <nav class="navbar navbar-default">
+      <div class="container">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/"><span style="font-weight: bold;">TOFU</span></a>
+              <ul class="nav navbar-nav">
+                <li><a href="/">Data</a></li>
+                <li><a href="/">Reconstructions</a></li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </nav>
+      </div>
+    </nav>
+
+    <div class="container">
       {% block body %}{% endblock %}
     </div>
   </body>

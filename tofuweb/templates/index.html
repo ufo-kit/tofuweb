@@ -1,5 +1,18 @@
 {% extends "layout.html" %}
 {% block body %}
+  <script>
+$(document).ready(function() {
+  $('#recoModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var recoId = button.data('reco-id');
+    $('#recoForm').attr('action', '/raw/reconstruct/' + recoId);
+  });
+
+  $('#recoSubmit').click(function() {
+    $('#recoForm').submit();
+  });
+});
+  </script>
   <div class="row">
     <div class="col-md-12">
       <h2>Raw datasets</h2>
@@ -16,7 +29,7 @@
             <td><a href="/raw/show/{{ dataset.id }}">{{ dataset.name }}</a></td>
             <td>
               <div class="btn-group" role="group" aria-label="...">
-                <a class="btn btn-default btn-sm" title="Reconstruct" role="button" href="/raw/reconstruct/{{ dataset.id }}"><i class="fa fa-cogs"></i></a>
+                <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#recoModal" data-reco-id="{{ dataset.id }}"> <i class="fa fa-cogs"></i></button>
                 <a class="btn btn-default btn-sm" title="Edit" role="button" href="/raw/edit/{{ dataset.id }}"><i class="fa fa-pencil-square-o"></i></a>
                 <a class="btn btn-danger btn-sm" title="Remove" role="button" href="/raw/delete/{{ dataset.id }}"><i class="fa fa-remove"></i></a>
             </div>
@@ -69,6 +82,29 @@
         </tbody>
       </table>
       {% endif %}
+    </div>
+  </div>
+
+  <div class="modal fade" id="recoModal" tabindex="-1" role="dialog" aria-labelledby="recoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="recoModalLabel">Parameters</h4>
+        </div>
+        <div class="modal-body">
+          <form id="recoForm" action="#" method="post">
+            <div class="form-group">
+              <label for="axis" class="control-label">Axis:</label>
+              <input type="number" class="form-control" id="axis" name="axis" value="">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="recoSubmit">Reconstruct</button>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
