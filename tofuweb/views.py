@@ -39,6 +39,7 @@ class RecoProcess(multiprocessing.Process):
         output = os.path.join(reco_path(self.dataset), 'volume.tif')
         app.logger.debug("Write output to {}".format(output))
         params = config.TomoParams().get_defaults()
+        params.axis = self.dataset.axis
         params.input = self.dataset.raw.data_path
         params.darks = self.dataset.raw.darks_path
         params.flats = self.dataset.raw.flats_path
