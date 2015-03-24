@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-md-12">
+    <div id="volume-container"></div>
+
+    <script src="{{ url_for('static', filename='js/three.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/OrbitControls.js') }}"></script>
+    <script type="text/javascript">
+
+      var camera, controls, scene, renderer, cameraTarget;
+
+      init();
+      render();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+      }
+
+      function init () {
+	    scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, 800 / 600, 100, 1000);
+
+        camera.position.set(0, 350, 350);
+        cameraTarget = new THREE.Vector3(0, 0, 0);
+        camera.lookAt(cameraTarget);
+
+        controls = new THREE.OrbitControls (camera);
+        controls.damping = 0.2;
+        controls.addEventListener ('change', render);
+
+        geometry = new THREE.PlaneGeometry (320, 320);
+
+        for ( var i = 0; i <= 15; i ++ ) {
+          texture = THREE.ImageUtils.loadTexture( 'slice/' + i );
+          texture.magFilter = THREE.NearestFilter;
+          texture.minFilter = THREE.NearestFilter;
+
+          mesh = new THREE.Mesh(geometry, 
+                                new THREE.MeshBasicMaterial( { map: texture,
+                                                               alphaMap:
+                                                               texture,
+                                                               opacity: 0.5,
+                                                               transparent: true,
+                                                               depthTest: false, }));
+          mesh.position.z = i;
+          mesh.doubleSided = true;
+          scene.add( mesh );
+        }
+
+        renderer = new THREE.WebGLRenderer({ antialias: false });
+        renderer.setClearColor(0xffffff);
+        renderer.setSize(800, 600);
+
+        document.getElementById('volume-container').appendChild(renderer.domElement);
+
+        animate();
+      }
+
+      function render() {
+        renderer.render(scene, camera);
+      }
+    </script>
+  </div>
+</div>
+{% endblock %}
+

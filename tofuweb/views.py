@@ -36,8 +36,7 @@ class RecoProcess(multiprocessing.Process):
     def run(self):
         from tofu import reco, config, __version__
 
-        output = os.path.join(reco_path(self.dataset), 'volume.tif')
-        app.logger.debug("Write output to {}".format(output))
+        output = os.path.join(reco_path(self.dataset), 'slice-%05i.tif')
         params = config.TomoParams().get_defaults()
         params.axis = self.dataset.axis
         params.input = self.dataset.raw.data_path
@@ -55,6 +54,25 @@ class RecoProcess(multiprocessing.Process):
             self.dataset.done = True
             db.session.commit()
 
+
+class DownsizeProcess(multiprocessing.Process):
+
+    def __init__(self, dataset):
+        super(DownsizeProcess, self).__init__()
+        self.dataset = dataset
+
+    def run(self):
+        from ufo import Read, DetectEdge, Rescale, Write
+
+        path = reco_path(self.dataset)
+
+        read = Read(path=os.path.join(path, 'slice*.tif'))
+        rescale = Rescale(factor=0.25)
+        edge = DetectEdge(type='laplace')
+        write = Write(filename=os.path.join(path, 'web', 'map-%05i.jpg'), bits=8)
+        app.logger.info("Downsizing for web")
+        write(rescale(read())).run().join()
+        
 
 @app.route('/')
 def index():
@@ -130,3 +148,23 @@ def download(dataset_id):
     dataset = Reconstruction.query.filter_by(id=dataset_id).first()
     path = os.path.abspath(reco_path(dataset))
     return send_from_directory(path, 'volume.tif', as_attachment=True)
+
+
+@app.route('/reco/downsize/<int:dataset_id>')
+def downsize(dataset_id):
+    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+    downsize = DownsizeProcess(dataset)
+    downsize.start()
+    return jsonify({})
+
+
+@app.route('/reco/<int:dataset_id>/slice/<int:number>')
+def get_slice(dataset_id, number):
+    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+    path = os.path.abspath(reco_path(dataset))
+    return send_from_directory(os.path.join(path, 'web'), 'map-%05i.jpg' % number)
+
+
+@app.route('/reco/<int:dataset_id>/render')
+def render(dataset_id):
+    return render_template('render.html', dataset_id=dataset_id)
