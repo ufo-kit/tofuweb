@@ -86,17 +86,17 @@ def delete_reconstruction(dataset_id):
     return redirect(url_for('index'))
 
 
-@app.route('/reco/done/<int:dataset_id>')
+@app.route('/reco/<int:dataset_id>/done')
 def reconstruction_done(dataset_id):
     dataset = Reconstruction.query.filter_by(id=dataset_id).first()
     return jsonify(done=dataset.done)
 
 
-@app.route('/reco/download/<int:dataset_id>')
+@app.route('/reco/<int:dataset_id>.tif')
 def download(dataset_id):
     dataset = Reconstruction.query.filter_by(id=dataset_id).first()
     path = os.path.abspath(reco_path(dataset))
-    return send_from_directory(path, 'volume.tif', as_attachment=True)
+    return send_from_directory(path, 'slice-00000.tif', as_attachment=True)
 
 
 @app.route('/reco/downsize/<int:dataset_id>')

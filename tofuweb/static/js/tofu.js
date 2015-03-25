@@ -14,7 +14,7 @@
                     $scope.loading['reco_' + recoId] = true;
 
                     // fire another request
-                    $http.get('/reco/done/' + recoId).
+                    $http.get('/reco/' + recoId + '/done').
                         success(function(data, status, headers, config) {
                             if(status === 202) {
                                 $log.log(data, status);
