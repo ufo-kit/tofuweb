@@ -32,14 +32,14 @@ def index():
     return render_template('index.html', **data)
 
 
-@app.route('/raw/show/<int:dataset_id>')
-def show_raw_dataset(dataset_id):
+@app.route('/data/<int:dataset_id>')
+def show_dataset(dataset_id):
     dataset = Dataset.query.filter_by(id=dataset_id).first()
     return render_template('show.html', dataset=dataset)
 
 
-@app.route('/raw/create', methods=['POST'])
-def create_raw_dataset():
+@app.route('/data/create', methods=['POST'])
+def create_dataset():
     form = CreateForm(request.form)
 
     if form.validate:
@@ -50,15 +50,15 @@ def create_raw_dataset():
     return redirect(url_for('index'))
 
 
-@app.route('/raw/delete/<int:dataset_id>')
-def delete_raw_dataset(dataset_id):
+@app.route('/data/delete/<int:dataset_id>')
+def delete_dataset(dataset_id):
     dataset = Dataset.query.filter_by(id=dataset_id).first()
     db.session.delete(dataset)
     db.session.commit()
     return redirect(url_for('index'))
 
 
-@app.route('/raw/reconstruct/<int:dataset_id>', methods=['POST'])
+@app.route('/data/reconstruct/<int:dataset_id>', methods=['POST'])
 def reconstruct(dataset_id):
     form = RecoForm(request.form)
     dataset = Dataset.query.filter_by(id=dataset_id).first()
@@ -72,7 +72,7 @@ def reconstruct(dataset_id):
     return redirect(url_for('index'))
 
 
-@app.route('/reco/show/<int:dataset_id>')
+@app.route('/reco/<int:dataset_id>')
 def show_reconstruction(dataset_id):
     reconstruction = Reconstruction.query.filter_by(id=dataset_id).first()
     return render_template('reco.html', reconstruction=reconstruction)

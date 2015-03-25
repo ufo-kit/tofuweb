@@ -11,7 +11,7 @@ $(document).ready(function() {
   $('#recoModal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     var recoId = button.data('reco-id');
-    $('#recoForm').attr('action', '/raw/reconstruct/' + recoId);
+    $('#recoForm').attr('action', '/data/reconstruct/' + recoId);
   });
 
   $('#recoSubmit').click(function() {
@@ -36,22 +36,18 @@ $(document).ready(function() {
         <tbody>
         {% for dataset in datasets %}
           <tr>
-            <td><a href="/raw/show/{{ dataset.id }}">{{ dataset.name }}</a></td>
+            <td><a href="/data/{{ dataset.id }}">{{ dataset.name }}</a></td>
             <td>
               <div class="btn-group" role="group" aria-label="...">
                 <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#recoModal" data-reco-id="{{ dataset.id }}"> <i class="fa fa-cogs"></i></button>
-                <a class="btn btn-default btn-sm" title="Edit" role="button" href="/raw/edit/{{ dataset.id }}"><i class="fa fa-pencil-square-o"></i></a>
-                <a class="btn btn-danger btn-sm" title="Remove" role="button" href="/raw/delete/{{ dataset.id }}"><i class="fa fa-remove"></i></a>
+                <a class="btn btn-danger btn-sm" title="Remove" role="button" href="/data/delete/{{ dataset.id }}"><i class="fa fa-remove"></i></a>
             </div>
             </td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
-      <button type="button" class="btn btn-default btn-sm"
-        data-toggle="modal" data-target="#createModal" title="Create dataset">
-      <i class="fa fa-plus-square"></i></button>
-      <!-- <p><a class="btn btn-default" href="/raw/create" title="Add raw dataset"><i class="fa fa-plus-square"></i></a></p> -->
+      <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#createModal" title="Create dataset"><i class="fa fa-plus-square"></i></button>
 
       {% if recos %}
       <h3>Reconstructions</h3>
@@ -69,7 +65,7 @@ $(document).ready(function() {
             <td>
               <div class="btn-group" role="group" aria-label="...">
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}/render"><i class="fa fa-eye"></i></a>
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/show/{{ reco.id }}"><i class="fa fa-info-circle"></i></a>
+                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}"><i class="fa fa-info-circle"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Download" role="button" href="/reco/download/{{ reco.id }}"><i class="fa fa-download"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Remove" role="button" href="/reco/delete/{{ reco.id }}"><i class="fa fa-remove"></i></a>
               </div>
@@ -85,8 +81,8 @@ $(document).ready(function() {
               {% endif %}
             </td>
             <td ng-app ng-init="running=1">
-              {% if reco.raw %}
-                <a href="/raw/show/{{ reco.dataset.id }}">{{ reco.raw.name }}</a>
+              {% if reco.dataset %}
+                <a href="/data/{{ reco.dataset.id }}">{{ reco.dataset.name }}</a>
               {% else %}
                 deleted
               {% endif %}
@@ -130,7 +126,7 @@ $(document).ready(function() {
           <h4 class="modal-title" id="createModalLabel">Create dataset</h4>
         </div>
         <div class="modal-body">
-          <form id="createForm" action="/raw/create" method="post">
+          <form id="createForm" action="/data/create" method="post">
             {{ render_field(create_form.name) }}
             {{ render_field(create_form.radios) }}
             {{ render_field(create_form.darks) }}
