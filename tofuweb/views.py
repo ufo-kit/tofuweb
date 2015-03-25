@@ -1,13 +1,13 @@
 import os
 from tofuweb import app, admin, db
-from tofuweb.models import Raw, Reconstruction
+from tofuweb.models import Dataset, Reconstruction
 from tofuweb.proc import RecoProcess, DownsizeProcess, reco_path
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory
 from flask.ext.admin.contrib.sqla import ModelView
 from wtforms import Form, TextField, FloatField, validators
 
 
-admin.add_view(ModelView(Raw, db.session))
+admin.add_view(ModelView(Dataset, db.session))
 admin.add_view(ModelView(Reconstruction, db.session))
 
 
@@ -25,16 +25,16 @@ class RecoForm(Form):
 
 @app.route('/')
 def index():
-    raw_datasets = Raw.query.all()
+    datasets = Dataset.query.all()
     reconstructions = Reconstruction.query.all()
     form = CreateForm(request.form)
-    data = dict(raw_datasets=raw_datasets, recos=reconstructions, create_form=form)
+    data = dict(datasets=datasets, recos=reconstructions, create_form=form)
     return render_template('index.html', **data)
 
 
 @app.route('/raw/show/<int:dataset_id>')
 def show_raw_dataset(dataset_id):
-    dataset = Raw.query.filter_by(id=dataset_id).first()
+    dataset = Dataset.query.filter_by(id=dataset_id).first()
     return render_template('show.html', dataset=dataset)
 
 
@@ -43,7 +43,7 @@ def create_raw_dataset():
     form = CreateForm(request.form)
 
     if form.validate:
-        dataset = Raw(form.name.data, form.radios.data, darks=form.darks.data, flats=form.flats.data)
+        dataset = Dataset(form.name.data, form.radios.data, darks=form.darks.data, flats=form.flats.data)
         db.session.add(dataset)
         db.session.commit()
 
@@ -52,7 +52,7 @@ def create_raw_dataset():
 
 @app.route('/raw/delete/<int:dataset_id>')
 def delete_raw_dataset(dataset_id):
-    dataset = Raw.query.filter_by(id=dataset_id).first()
+    dataset = Dataset.query.filter_by(id=dataset_id).first()
     db.session.delete(dataset)
     db.session.commit()
     return redirect(url_for('index'))
@@ -61,7 +61,7 @@ def delete_raw_dataset(dataset_id):
 @app.route('/raw/reconstruct/<int:dataset_id>', methods=['POST'])
 def reconstruct(dataset_id):
     form = RecoForm(request.form)
-    dataset = Raw.query.filter_by(id=dataset_id).first()
+    dataset = Dataset.query.filter_by(id=dataset_id).first()
     reco_dataset = Reconstruction(dataset, axis=form.axis.data)
     db.session.add(reco_dataset)
     db.session.commit()
@@ -74,8 +74,8 @@ def reconstruct(dataset_id):
 
 @app.route('/reco/show/<int:dataset_id>')
 def show_reconstruction(dataset_id):
-    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
-    return render_template('reco.html', dataset=dataset)
+    reconstruction = Reconstruction.query.filter_by(id=dataset_id).first()
+    return render_template('reco.html', reconstruction=reconstruction)
 
 
 @app.route('/reco/delete/<int:dataset_id>')

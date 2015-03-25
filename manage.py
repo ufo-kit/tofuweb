@@ -1,7 +1,7 @@
 import os
 from flask.ext.script import Manager
 from tofuweb import app, db
-from tofuweb.models import Raw, Reconstruction
+from tofuweb.models import Dataset, Reconstruction
 
 
 manager = Manager(app)

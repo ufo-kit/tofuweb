@@ -34,7 +34,7 @@ $(document).ready(function() {
           </tr>
         </thead>
         <tbody>
-        {% for dataset in raw_datasets %}
+        {% for dataset in datasets %}
           <tr>
             <td><a href="/raw/show/{{ dataset.id }}">{{ dataset.name }}</a></td>
             <td>
@@ -86,7 +86,7 @@ $(document).ready(function() {
             </td>
             <td ng-app ng-init="running=1">
               {% if reco.raw %}
-                <a href="/raw/show/{{ reco.raw.id }}">{{ reco.raw.name }}</a>
+                <a href="/raw/show/{{ reco.dataset.id }}">{{ reco.raw.name }}</a>
               {% else %}
                 deleted
               {% endif %}
