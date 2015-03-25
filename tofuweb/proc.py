@@ -46,9 +46,8 @@ class DownsizeProcess(multiprocessing.Process):
         from ufo import Read, DetectEdge, Rescale, Write
 
         path = reco_path(self.reconstruction)
-
         read = Read(path=os.path.join(path, 'slice*.tif'))
-        rescale = Rescale(factor=0.25)
+        rescale = Rescale(factor=0.5)
+        edge = DetectEdge()
         write = Write(filename=os.path.join(path, 'web', 'map-%05i.jpg'), bits=8)
-        app.logger.info("Downsizing for web")
-        write(rescale(read())).run().join()
+        write(rescale(square(edge(read())))).run().join()

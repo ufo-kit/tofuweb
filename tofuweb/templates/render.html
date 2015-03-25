@@ -32,19 +32,19 @@
 
         geometry = new THREE.PlaneGeometry (320, 320);
 
-        for ( var i = 0; i <= 15; i ++ ) {
+        for ( var i = 0; i <= 300; i += 2 ) {
           texture = THREE.ImageUtils.loadTexture( 'slice/' + i );
           texture.magFilter = THREE.NearestFilter;
           texture.minFilter = THREE.NearestFilter;
 
           mesh = new THREE.Mesh(geometry, 
                                 new THREE.MeshBasicMaterial( { map: texture,
-                                                               alphaMap:
-                                                               texture,
+                                                               alphaMap: texture,
                                                                opacity: 0.5,
                                                                transparent: true,
-                                                               depthTest: false, }));
-          mesh.position.z = i;
+                                                               depthTest: false,
+                                                               side: THREE.DoubleSide }));
+          mesh.position.z = 0.5 * i;
           mesh.doubleSided = true;
           scene.add( mesh );
         }
@@ -52,6 +52,7 @@
         renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setClearColor(0xffffff);
         renderer.setSize(800, 600);
+        renderer.setBlending(THREE.AdditiveBlending);
 
         document.getElementById('volume-container').appendChild(renderer.domElement);
 
