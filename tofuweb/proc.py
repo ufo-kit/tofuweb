@@ -51,3 +51,20 @@ class DownsizeProcess(multiprocessing.Process):
         edge = DetectEdge()
         write = Write(filename=os.path.join(path, 'web', 'map-%05i.jpg'), bits=8)
         write(rescale(edge(read()))).run().join()
+
+
+class MapProcess(multiprocessing.Process):
+
+    def __init__(self, reconstruction):
+        super(MapProcess, self).__init__()
+        self.reconstruction = reconstruction
+
+    def run(self):
+        from ufo import Read, MapSlice, Rescale, Write
+
+        path = reco_path(self.reconstruction)
+        read = Read(path=os.path.join(path, 'slice*.tif'), number=60)
+        rescale = Rescale(factor=0.5)
+        map_slices = MapSlice(number=64)
+        write = Write(filename=os.path.join(path, 'web', 'slices-%05i.jpg'), bits=8)
+        write(map_slices(rescale((read())))).run().join()

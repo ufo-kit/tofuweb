@@ -1,7 +1,7 @@
 import os
 from tofuweb import app, admin, db
 from tofuweb.models import Dataset, Reconstruction
-from tofuweb.proc import RecoProcess, DownsizeProcess, reco_path
+from tofuweb.proc import RecoProcess, DownsizeProcess, MapProcess, reco_path
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory
 from flask.ext.admin.contrib.sqla import ModelView
 from wtforms import Form, TextField, FloatField, validators
@@ -99,12 +99,25 @@ def download(dataset_id):
     return send_from_directory(path, 'slice-00000.tif', as_attachment=True)
 
 
-@app.route('/reco/downsize/<int:dataset_id>')
+@app.route('/reco/<int:dataset_id>/slice')
 def downsize(dataset_id):
     dataset = Reconstruction.query.filter_by(id=dataset_id).first()
     downsize = DownsizeProcess(dataset)
     downsize.start()
     return jsonify({})
+
+
+@app.route('/reco/<int:dataset_id>/map.jpg', methods=['POST', 'GET'])
+def slice_map(dataset_id):
+    if request.method == 'POST':
+        dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+        downsize = MapProcess(dataset)
+        downsize.start()
+        return jsonify({})
+    else:
+        dataset = Reconstruction.query.filter_by(id=dataset_id).first()
+        path = os.path.abspath(reco_path(dataset))
+        return send_from_directory(os.path.join(path, 'web'), 'slices-00000.jpg')
 
 
 @app.route('/reco/<int:dataset_id>/slice/<int:number>')
