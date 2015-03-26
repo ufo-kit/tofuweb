@@ -50,4 +50,4 @@ class DownsizeProcess(multiprocessing.Process):
         rescale = Rescale(factor=0.5)
         edge = DetectEdge()
         write = Write(filename=os.path.join(path, 'web', 'map-%05i.jpg'), bits=8)
-        write(rescale(square(edge(read())))).run().join()
+        write(rescale(edge(read()))).run().join()
