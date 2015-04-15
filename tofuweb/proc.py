@@ -28,10 +28,10 @@ class RecoProcess(multiprocessing.Process):
 
         try:
             time = reco.tomo(params)
+            self.reconstruction.time = time
             app.logger.debug("Finished reconstruction in {}s".format(time))
         finally:
             self.reconstruction.software = 'Tofu {}'.format(__version__)
-            self.reconstruction.time = time
             self.reconstruction.done = True
             db.session.commit()
 
