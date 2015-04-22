@@ -130,3 +130,8 @@ def get_slice(dataset_id, number):
 @app.route('/reco/<int:dataset_id>/render')
 def render(dataset_id):
     return render_template('render.html', dataset_id=dataset_id)
+
+
+@app.route('/reco/<int:dataset_id>/browse')
+def browse(dataset_id):
+    return render_template('browse.html', dataset_id=dataset_id)

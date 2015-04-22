@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="row">
+  <div class="col-md-12">
+    <div id="center-block">
+      <img id="image" src="slice/0" />
+    </div>
+    <div id="slider"></div>
+    <script type="text/javascript">
+      $(function() {
+        $("#slider").slider({
+          value: 0,
+          min: 0,
+          max: 200,
+          step: 1,
+          slide: function(event, ui) {
+            $("#image").attr('src', "slice/" + ui.value);
+          }
+        });
+      });
+    </script>
+  </div>
+</div>
+{% endblock %}
+

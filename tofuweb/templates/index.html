@@ -64,6 +64,7 @@ $(document).ready(function() {
           <tr>
             <td>
               <div class="btn-group" role="group" aria-label="...">
+                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}/browse"><i class="fa fa-file-image-o"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}/render"><i class="fa fa-eye"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}"><i class="fa fa-info-circle"></i></a>
                 <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Download" role="button" href="/reco/{{ reco.id }}.tif"><i class="fa fa-download"></i></a>
