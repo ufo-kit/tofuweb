@@ -1,6 +1,6 @@
 import os
 import multiprocessing
-from tofuweb import app, db
+from tofuweb import app, db, tasks
 
 
 def reco_path(reconstruction):
@@ -48,9 +48,10 @@ class DownsizeProcess(multiprocessing.Process):
         path = reco_path(self.reconstruction)
         read = Read(path=os.path.join(path, 'slice*.tif'))
         rescale = Rescale(factor=0.5)
-        edge = DetectEdge()
+        # edge = DetectEdge()
         write = Write(filename=os.path.join(path, 'web', 'map-%05i.jpg'), bits=8)
-        write(rescale(edge(read()))).run().join()
+        write(rescale(read())).run().join()
+        app.logger.debug("Finished downsizing")
 
 
 class MapProcess(multiprocessing.Process):

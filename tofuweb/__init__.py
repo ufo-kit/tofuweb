@@ -10,6 +10,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/app.db'
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'changesometimesoon'
 
+app.config['CELERY_BROKER_URL'] = 'amqp://localhost:5672//'
+app.config['CELERY_ACCEPT_CONTENT'] = ['pickle']
+
+
 api = Api(app)
 db = SQLAlchemy(app)
 admin = Admin(app)

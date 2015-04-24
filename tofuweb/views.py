@@ -1,5 +1,5 @@
 import os
-from tofuweb import app, admin, db
+from tofuweb import app, admin, db, tasks
 from tofuweb.models import Dataset, Reconstruction
 from tofuweb.proc import RecoProcess, DownsizeProcess, MapProcess, reco_path
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory
@@ -65,9 +65,10 @@ def reconstruct(dataset_id):
     reco_dataset = Reconstruction(dataset, axis=form.axis.data)
     db.session.add(reco_dataset)
     db.session.commit()
+    tasks.reconstruct.delay(reco_dataset.id)
 
-    reco = RecoProcess(reco_dataset)
-    reco.start()
+#     reco = RecoProcess(reco_dataset)
+#     reco.start()
 
     return redirect(url_for('index'))
 
