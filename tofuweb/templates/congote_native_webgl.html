@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block body %}
+<link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/render.css') }}" />
+<link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/custom.css') }}" />
+
+<link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='css/bootstrap_slider.css') }}" />
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/sylvester.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap_slider.js') }}"></script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/glUtils.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/glAux.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/volumerc.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script type="text/javascript">
+	window.onload = function()
+	{
+	   init();
+       // console.log({{ slice_map.slices_number }}, {{ slice_map.sliceMap_slices_per_row }}, {{ slice_map.sliceMap_slices_per_col }}, {{ slice_map.sliceMap_slice_width }});
+
+       volumerc_main('{{ url_for('static', filename='shaders/raycast-color.frag') }}','map.jpg','{{ url_for('static', filename='img/tf.png') }}', {{ slice_map.slices_number }}, {{ slice_map.sliceMap_slices_per_row }}, {{ slice_map.sliceMap_slices_per_col }}, {{ slice_map.sliceMap_slice_width }});
+       // volumerc_main('{{ url_for('static', filename='shaders/raycast-color.frag') }}','{{ url_for('static', filename='img/aorta-high.jpg') }}','{{ url_for('static', filename='img/tf.png') }}',100 , 10, 10, 409);
+    
+	};
+
+</script>
+
+<div id="container-header">
+	<h1>Real-Time Interactive Visualization of Volumetric Data with WebGL</h1>
+
+</div>
+
+<div id="container">
+    <div id="container-header" class="float-left">
+        <div id="container-stats" class="float-left">
+        </div>
+        <div id="volume-information" class="float-left">
+            volume name: <span class="bold">{{ reco.dataset.name }}</span><br />
+
+            <div id="progress">
+                <div id="progress-container" class="hidden">
+                    <p>Downloading <span id="texturePath"></span></p>
+                    <progress id="image-progress" class="margin-top" style="width: 100%;" value="0" max="100" ></progress>
+                </div>
+            </div>
+        </div>
+        <div id="popup" class="hidden"></div>
+    </div>
+	<canvas id="canvas_win" width="768" height="768" style="width: 100%; height: 100%;"></canvas>
+    
+</div>
+
+<div id="bottom-controls-container">
+    <span>gray value selection: </span>
+    <input type="text" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="[0,255]" data-slider-handle="triangle" id="gray_slider" style="padding:70px;">
+
+</div>
+
+{% endblock %}

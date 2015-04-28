@@ -12,6 +12,7 @@ $(document).ready(function() {
     var button = $(event.relatedTarget);
     var recoId = button.data('reco-id');
     $('#recoForm').attr('action', '/data/reconstruct/' + recoId);
+    // $('#recoForm').attr('action', 'reco/1/map.jpg');
   });
 
   $('#recoSubmit').click(function() {
@@ -55,32 +56,63 @@ $(document).ready(function() {
         <thead>
           <tr>
             <th>Actions</th>
-            <th>Status</th>
+            <th>Reconstaction</th>
+            <th>Slice map</th>
+            <th>Slices thumbs</th>
             <th>Dataset</th>
           </tr>
         </thead>
         <tbody>
         {% for reco in recos %}
-          <tr>
+          <tr ng-init="recoStillRunning({{ reco.id}}, {'reco_done': {{ "true" if reco.done == True else "false" }}, 'reco_has_error': {{ "true" if reco.has_error == True else "false" }}, 'slice_map_done': {{ "true" if reco.maps_slices[0].done == True else "false" }} , 'slice_map_has_error': {{ "true" if reco.maps_slices[0].has_error == True else "false"}}, 'slices_thumbs_done': {{ "true" if reco.slices_thumbs[0].done == True else "false" }} , 'slices_thumbs_has_error': {{ "true" if reco.slices_thumbs[0].has_error == True else "false"}} })">
             <td>
-              <div class="btn-group" role="group" aria-label="...">
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}/browse"><i class="fa fa-file-image-o"></i></a>
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}/render"><i class="fa fa-eye"></i></a>
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Info" role="button" href="/reco/{{ reco.id }}"><i class="fa fa-info-circle"></i></a>
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Download" role="button" href="/reco/{{ reco.id }}.tif"><i class="fa fa-download"></i></a>
-                <a ng-disabled="loading.reco_{{ reco.id }}" class="btn btn-default btn-sm" title="Remove" role="button" href="/reco/delete/{{ reco.id }}"><i class="fa fa-remove"></i></a>
+              <div class="btn-group" role="group" aria-label="..." >
+                <a ng-disabled="loading.reco_{{reco.id}}_show_slides" class="btn btn-default btn-sm" title="Info"     role="button" href="/reco/{{ reco.id }}/browse"> <i class="fa fa-file-image-o"></i></a>
+                <a ng-disabled="loading.reco_{{reco.id}}_render"      class="btn btn-default btn-sm" title="Info"     role="button" href="/reco/{{ reco.id }}/render"> <i class="fa fa-eye"></i></a>
+                <a ng-disabled="loading.reco_{{reco.id}}_open_info"   class="btn btn-default btn-sm" title="Info"     role="button" href="/reco/{{ reco.id }}">        <i class="fa fa-info-circle"></i></a>
+                <a ng-disabled="loading.reco_{{reco.id}}_load_slide"  class="btn btn-default btn-sm" title="Download" role="button" href="/reco/{{ reco.id }}.tif">    <i class="fa fa-download"></i></a>
+                <a ng-disabled="loading.reco_{{reco.id}}_delete"      class="btn btn-default btn-sm" title="Remove"   role="button" href="/reco/delete/{{ reco.id }}"> <i class="fa fa-remove"></i></a>
               </div>
             </td>
+            
             <td>
-              {% if reco.done %}
-              <i class="fa fa-check-square"></i>
-              {% else %}
-              <div ng-init="stillRunning({{ reco.id }})">
-                <i ng-hide="loading.reco_{{ reco.id }}" class="fa fa-check-square ng-hide"></i>
-                <img ng-show="loading.reco_{{ reco.id }}" src="{{ url_for('static', filename='img/spinner.gif') }}"/>
+              <div ng-show="loading.reco_{{ reco.id }}_reconstruction_with_error" class="fa ng-hide" style="position: absolute;">
+                <i class="fa fa-warning"></i>
               </div>
-              {% endif %}
+              <div ng-show="loading.reco_{{ reco.id }}_reconstruction_is_done" class="fa ng-hide" style="position: absolute;">
+                <i class="fa fa-check-square"></i>
+              </div>
+              <div ng-show="loading.reco_{{ reco.id }}_reconstruction_going" class="ng-hide" style="position: absolute;">
+                <img src="{{ url_for('static', filename='img/spinner.gif') }}"/>
+              </div>
             </td>
+            
+            <td>
+              <div ng-show="loading.reco_{{ reco.id }}_slice_map_creation_with_error" class="fa ng-hide" style="position: absolute;">
+                <i class="fa fa-warning"></i>
+              </div>
+              <div ng-show="loading.reco_{{ reco.id }}_slice_map_creation_is_done" class="fa ng-hide" style="position: absolute;">
+                <i class="fa fa-check-square"></i>
+              </div>
+              <div ng-show="loading.reco_{{ reco.id }}_slice_map_creation_going" class="ng-hide" style="position: absolute;">
+                <img src="{{ url_for('static', filename='img/spinner.gif') }}"/>
+              </div>
+
+            </td>
+
+            <td>
+              <div ng-show="loading.reco_{{ reco.id }}_slices_thumbs_creation_with_error" class="fa ng-hide" style="position: absolute;">
+                <i class="fa fa-warning"></i>
+              </div>
+              <div ng-show="loading.reco_{{ reco.id }}_slices_thumbs_creation_is_done" class="fa ng-hide" style="position: absolute;">
+                <i class="fa fa-check-square"></i>
+              </div>
+              <div ng-show="loading.reco_{{ reco.id }}_slices_thumbs_creation_going" class="ng-hide" style="position: absolute;">
+                <img src="{{ url_for('static', filename='img/spinner.gif') }}"/>
+              </div>
+
+            </td>
+            
             <td ng-app ng-init="running=1">
               {% if reco.dataset %}
                 <a href="/data/{{ reco.dataset.id }}">{{ reco.dataset.name }}</a>

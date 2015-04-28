@@ -5,21 +5,19 @@
     <div id="center-block">
       <img id="image" src="slice/0" />
     </div>
-    <div id="slider"></div>
+
+    <input type="text" value="" data-slider-min="0" data-slider-max="{{ slices_thumbs.slices_number }}" data-slider-step="1" data-slider-value="0" data-slider-handle="triangle" id="slice_slider" style="padding:100%;">
+
     <script type="text/javascript">
       $(function() {
-        $("#slider").slider({
-          value: 0,
-          min: 0,
-          max: 200,
-          step: 1,
-          slide: function(event, ui) {
-            $("#image").attr('src', "slice/" + ui.value);
-          }
+        $("#slice_slider").slider()
+        .on('slideStop', function(e) {
+          $("#image").attr('src', "slice/" + e.value);
+
         });
+
       });
     </script>
   </div>
 </div>
 {% endblock %}
-
