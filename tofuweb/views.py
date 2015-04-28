@@ -1,16 +1,14 @@
 import os
 from tofuweb import app, admin, db
-from tofuweb.models import Dataset, Reconstruction
+from tofuweb.models import Dataset, Reconstruction, MapSliceModel
 from tofuweb.proc import RecoProcess, DownsizeProcess, MapProcess, reco_path
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory
 from flask.ext.admin.contrib.sqla import ModelView
 from wtforms import Form, TextField, FloatField, validators
 
-
 admin.add_view(ModelView(Dataset, db.session))
 admin.add_view(ModelView(Reconstruction, db.session))
-
-
+admin.add_view(ModelView(MapSliceModel, db.session))
 
 class CreateForm(Form):
     name = TextField("Name", [validators.Required()])
@@ -62,26 +60,35 @@ def delete_dataset(dataset_id):
 def reconstruct(dataset_id):
     form = RecoForm(request.form)
     dataset = Dataset.query.filter_by(id=dataset_id).first()
-    reco_dataset = Reconstruction(dataset, axis=form.axis.data)
-    db.session.add(reco_dataset)
+    reco = Reconstruction(dataset, axis=form.axis.data)
+    db.session.add(reco)
     db.session.commit()
 
-    reco = RecoProcess(reco_dataset)
-    reco.start()
+    recoProc = RecoProcess(reco)
+    recoProc.start()
 
     return redirect(url_for('index'))
 
 
-@app.route('/reco/<int:dataset_id>')
-def show_reconstruction(dataset_id):
-    reconstruction = Reconstruction.query.filter_by(id=dataset_id).first()
+@app.route('/reco/<int:reco_id>')
+def show_reconstruction(reco_id):
+    reconstruction = Reconstruction.query.filter_by(id=reco_id).first()
     return render_template('reco.html', reconstruction=reconstruction)
 
 
 @app.route('/reco/delete/<int:dataset_id>')
 def delete_reconstruction(dataset_id):
-    dataset = Reconstruction.query.filter_by(id=dataset_id).first()
-    db.session.delete(dataset)
+    reco = Reconstruction.query.filter_by(id=dataset_id).first()
+
+    try:
+        import shutil
+        shutil.rmtree(reco.getPath())
+    except OSError, e:
+        print("Dir of reconstruction can't be deleted or not found!")
+
+    for entity in reco.maps_slices:
+        db.session.delete(entity)
+    db.session.delete(reco)
     db.session.commit()
     return redirect(url_for('index'))
 
@@ -106,18 +113,19 @@ def downsize(dataset_id):
     downsize.start()
     return jsonify({})
 
+@app.route('/reco/<int:reco_id>/map.jpg')
+def slice_map(reco_id):
+    reco = Reconstruction.query.filter_by(id=reco_id).first()
 
-@app.route('/reco/<int:dataset_id>/map.jpg', methods=['POST', 'GET'])
-def slice_map(dataset_id):
-    if request.method == 'POST':
-        dataset = Reconstruction.query.filter_by(id=dataset_id).first()
-        downsize = MapProcess(dataset)
-        downsize.start()
-        return jsonify({})
-    else:
-        dataset = Reconstruction.query.filter_by(id=dataset_id).first()
-        path = os.path.abspath(reco_path(dataset))
-        return send_from_directory(os.path.join(path, 'web'), 'slices-00000.jpg')
+    try:
+        map_slice = reco.maps_slices[0]
+    except:
+        mapProc = MapProcess(db, reco)
+        mapProc.start()
+        mapProc.join()
+        map_slice = reco.maps_slices[0]
+
+    return send_from_directory(map_slice.path, map_slice.map_file_name)
 
 
 @app.route('/reco/<int:dataset_id>/slice/<int:number>')
@@ -126,7 +134,16 @@ def get_slice(dataset_id, number):
     path = os.path.abspath(reco_path(dataset))
     return send_from_directory(os.path.join(path, 'web'), 'map-%05i.jpg' % number)
 
+@app.route('/reco/<int:reco_id>/render')
+def render(reco_id):
+    reco = Reconstruction.query.filter_by(id=reco_id).first()
+    
+    try:
+        map_slice = reco.maps_slices[0]
+    except:
+        mapProc = MapProcess(db, reco)
+        mapProc.start()
+        mapProc.join()
+        map_slice = reco.maps_slices[0]
 
-@app.route('/reco/<int:dataset_id>/render')
-def render(dataset_id):
-    return render_template('render.html', dataset_id=dataset_id)
+    return render_template('congote_native_webgl.html', reco_id=reco_id, reco=reco, map_slice=map_slice)

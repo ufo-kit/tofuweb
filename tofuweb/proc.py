@@ -1,7 +1,7 @@
 import os
 import multiprocessing
 from tofuweb import app, db
-
+from tofuweb.models import MapSliceModel
 
 def reco_path(reconstruction):
     return os.path.join('/tmp/recos/', str(reconstruction.dataset.id), str(reconstruction.id))
@@ -28,7 +28,7 @@ class RecoProcess(multiprocessing.Process):
 
         try:
             time = reco.tomo(params)
-            app.logger.debug("Finished reconstruction in {}s".format(time))
+            app.logger.debug("Finished reconstruction in {}".format(time))
         finally:
             self.reconstruction.software = 'Tofu {}'.format(__version__)
             self.reconstruction.time = time
@@ -45,26 +45,60 @@ class DownsizeProcess(multiprocessing.Process):
     def run(self):
         from ufo import Read, DetectEdge, Rescale, Write
 
+        print("DownsizeProcess.run");
+
         path = reco_path(self.reconstruction)
         read = Read(path=os.path.join(path, 'slice*.tif'))
-        rescale = Rescale(factor=0.5)
+        rescale = Rescale(factor=1.0)
         edge = DetectEdge()
         write = Write(filename=os.path.join(path, 'web', 'map-%05i.jpg'), bits=8)
         write(rescale(edge(read()))).run().join()
 
 
 class MapProcess(multiprocessing.Process):
-
-    def __init__(self, reconstruction):
+    def __init__(self, db, reco):
         super(MapProcess, self).__init__()
-        self.reconstruction = reconstruction
+        self.db = db
+        self.reco = reco
 
     def run(self):
         from ufo import Read, MapSlice, Rescale, Write
+        from PIL import Image
+        import math
+        import time
 
-        path = reco_path(self.reconstruction)
-        read = Read(path=os.path.join(path, 'slice*.tif'), number=60)
-        rescale = Rescale(factor=0.5)
-        map_slices = MapSlice(number=64)
-        write = Write(filename=os.path.join(path, 'web', 'slices-%05i.jpg'), bits=8)
+        map_slice_model = MapSliceModel(self.reco)
+        
+        start_time = time.time()        
+        
+        map_slice_model.path = os.path.join(self.reco.getPath(), "web")
+        map_slice_model.slices_number = len(os.listdir(self.reco.getPath()))
+
+        map_slice_model.sliceMap_width = 4096
+        map_slice_model.sliceMap_height = 4096
+        
+        im = Image.open(os.path.join(self.reco.getPath(),os.listdir(self.reco.getPath())[0]))
+        sliceResolution = im.size
+        
+        map_slice_model.original_slice_width = sliceResolution[0]
+        map_slice_model.original_slice_height = sliceResolution[1]
+
+        map_slice_model.sliceMap_slices_per_row = math.ceil(math.sqrt(map_slice_model.slices_number))
+        map_slice_model.sliceMap_slices_per_col = map_slice_model.sliceMap_slices_per_row
+
+        map_slice_model.resize_factor = (map_slice_model.sliceMap_width/map_slice_model.sliceMap_slices_per_row) / map_slice_model.original_slice_width
+
+        map_slice_model.sliceMap_slice_width = map_slice_model.original_slice_width * map_slice_model.resize_factor
+        map_slice_model.sliceMap_slice_height = map_slice_model.original_slice_height * map_slice_model.resize_factor
+        
+        read = Read(path=os.path.join(self.reco.getPath(), 'slice*.tif'), number=map_slice_model.slices_number)
+        rescale = Rescale(factor=map_slice_model.resize_factor)
+        map_slices = MapSlice(number=map_slice_model.slices_number)
+        write = Write(filename=os.path.join(map_slice_model.path, map_slice_model.map_file_name), bits=8)
         write(map_slices(rescale((read())))).run().join()
+
+        map_slice_model.done = True
+        map_slice_model.time = time.time() - start_time
+
+        db.session.add(map_slice_model)
+        db.session.commit()
