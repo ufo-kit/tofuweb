@@ -22,7 +22,9 @@
 	{
 		init();
 
-		volumerc_main('{{ url_for('static', filename='shaders/raycast-color.frag') }}','map.jpg','{{ url_for('static', filename='img/tf.png') }}', {{ map_slice.slices_number }}, {{ map_slice.sliceMap_slices_per_row }}, {{ map_slice.sliceMap_slices_per_col }}, {{ map_slice.sliceMap_slice_width }});
+        console.log({{ slice_map.slices_number }}, {{ slice_map.sliceMap_slices_per_row }}, {{ slice_map.sliceMap_slices_per_col }}, {{ slice_map.sliceMap_slice_width }});
+
+		volumerc_main('{{ url_for('static', filename='shaders/raycast-color.frag') }}','map.jpg','{{ url_for('static', filename='img/tf.png') }}', {{ slice_map.slices_number }}, {{ slice_map.sliceMap_slices_per_row }}, {{ slice_map.sliceMap_slices_per_col }}, {{ slice_map.sliceMap_slice_width }});
 		// volumerc_main('{{ url_for('static', filename='shaders/raycast-color.frag') }}','{{ url_for('static', filename='img/aorta-high.jpg') }}','{{ url_for('static', filename='img/tf.png') }}',100 , 10, 10, 409);
 
 	};
