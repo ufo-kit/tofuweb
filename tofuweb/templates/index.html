@@ -56,7 +56,7 @@ $(document).ready(function() {
         <thead>
           <tr>
             <th>Actions</th>
-            <th>Reconstaction</th>
+            <th>Reconstruction</th>
             <th>Slice map</th>
             <th>Slices thumbs</th>
             <th>Dataset</th>
@@ -64,7 +64,7 @@ $(document).ready(function() {
         </thead>
         <tbody>
         {% for reco in recos %}
-          <tr ng-init="recoStillRunning({{ reco.id}}, {'reco_done': {{ "true" if reco.done == True else "false" }}, 'reco_has_error': {{ "true" if reco.has_error == True else "false" }}, 'slice_map_done': {{ "true" if reco.maps_slices[0].done == True else "false" }} , 'slice_map_has_error': {{ "true" if reco.maps_slices[0].has_error == True else "false"}}, 'slices_thumbs_done': {{ "true" if reco.slices_thumbs[0].done == True else "false" }} , 'slices_thumbs_has_error': {{ "true" if reco.slices_thumbs[0].has_error == True else "false"}} })">
+          <tr ng-init="recoStillRunning({{ reco.id}}, {'reco_done': {{ "true" if reco.done == True else "false" }}, 'reco_has_error': {{ "true" if reco.has_error == True else "false" }}, 'slice_map_done': {{ "true" if reco.is_slicemaping_done == True else "false" }} , 'slice_map_has_error': {{ "true" if reco.has_slicemaping_error == True else "false"}}, 'slices_thumbs_done': {{ "true" if reco.is_slicesthumbsing_done == True else "false" }} , 'slices_thumbs_has_error': {{ "true" if reco.has_slicesthumbsing_error == True else "false"}} })">
             <td>
               <div class="btn-group" role="group" aria-label="..." >
                 <a ng-disabled="loading.reco_{{reco.id}}_show_slides" class="btn btn-default btn-sm" title="Info"     role="button" href="/reco/{{ reco.id }}/browse"> <i class="fa fa-file-image-o"></i></a>
@@ -140,6 +140,12 @@ $(document).ready(function() {
             <div class="form-group">
               <label for="axis" class="control-label">Axis:</label>
               <input type="number" class="form-control" id="axis" name="axis" value="">
+
+              <label for="axis" class="control-label">Slicemap image side size:</label>
+              <input type="number" class="form-control" id="slicemap_image_side_size" name="slicemap_image_side_size" value="2048">
+
+              <label for="axis" class="control-label">Number rows and cols in slicemap:</label>
+              <input type="number" class="form-control" id="slicemap_rows_ans_cols_number" name="slicemap_rows_ans_cols_number" value="10">
             </div>
           </form>
         </div>

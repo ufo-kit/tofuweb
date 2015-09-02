@@ -17,9 +17,10 @@ class CreateForm(Form):
     darks = TextField("Darks")
     flats = TextField("Flats")
 
-
 class RecoForm(Form):
     axis = FloatField("axis")
+    slicemap_image_side_size = FloatField("slicemap image side size")
+    slicemap_rows_ans_cols_number = FloatField("number rows and cols in slicemap")
 
 
 @app.route('/')
@@ -32,7 +33,7 @@ def index():
         return render_template('index.html', **data)
 
     except Exception as e:
-        app.logger.error("Crashed query: /: Error: {}".format(e))
+        app.logger.error("Crashed query: Error: {}".format(e))
         return render_template('error.html', error_message=e)
 
 
@@ -88,7 +89,13 @@ def reconstruct(dataset_id):
         db.session.add(reco)
         db.session.commit()
 
-        slice_map = SliceMap(reco)
+        slice_map_row = int(form.slicemap_rows_ans_cols_number.data)
+        slice_map_col = int(form.slicemap_rows_ans_cols_number.data)
+
+        slice_map_width = int(form.slicemap_image_side_size.data)
+        slice_map_height = int(form.slicemap_image_side_size.data)
+
+        slice_map = SliceMap(reco, 'slicemap-%02i.jpg', slice_map_row, slice_map_col, slice_map_width, slice_map_height)
         db.session.add(slice_map)
         db.session.commit()
 
@@ -117,10 +124,10 @@ def show_reconstruction(reco_id):
         return render_template('error.html', error_message=e)
 
 
-@app.route('/reco/delete/<int:reco_id>')
-def delete_reconstruction(reco_id):
+@app.route('/reco/delete/<int:dataset_id>')
+def delete_reconstruction(dataset_id):
     try:
-        reco = Reconstruction.query.filter_by(id=reco_id).first()
+        reco = Reconstruction.query.filter_by(id=dataset_id).first()
 
         try:
             import shutil
@@ -140,7 +147,7 @@ def delete_reconstruction(reco_id):
         return redirect(url_for('index'))
 
     except Exception as e:
-        app.logger.error("Crashed query: /reco/delete/{}: Error: {}".format(reco_id, e))
+        app.logger.error("Crashed query: /reco/delete/{}: Error: {}".format(dataset_id, e))
         return render_template('error.html', error_message=e)
 
 
@@ -158,6 +165,7 @@ def reconstruction_done(reco_id):
                 slice_map_proc.start()
 
             if slices_thumbs.done == False and slices_thumbs.creation_going == False:
+
                 slices_thumbs_proc = SlicesThumbsProcess(slices_thumbs)
                 slices_thumbs_proc.start()
 
@@ -168,40 +176,38 @@ def reconstruction_done(reco_id):
         return render_template('error.html', error_message=e)
 
 
-@app.route('/reco/<int:reco_id>.tif')
-def download(reco_id):
+@app.route('/reco/<int:dataset_id>.tif')
+def download(dataset_id):
     try:
-        dataset = Reconstruction.query.filter_by(id=reco_id).first()
+        dataset = Reconstruction.query.filter_by(id=dataset_id).first()
         path = os.path.abspath(reco_path(dataset))
         return send_from_directory(path, 'slice-00000.tif', as_attachment=True)
 
     except Exception as e:
-        app.logger.error("Crashed query: /reco/{}.tif: Error: {}".format(reco_id, e))
+        app.logger.error("Crashed query: /reco/{}.tif: Error: {}".format(dataset_id, e))
         return render_template('error.html', error_message=e)
 
-
-
-@app.route('/reco/<int:reco_id>/map.jpg')
-def slice_map(reco_id):
+@app.route('/reco/<int:reco_id>/<int:slice_map_file_index>/slicemap')
+def slice_map(reco_id, slice_map_file_index):
     try:
         reco = Reconstruction.query.filter_by(id=reco_id).first()
+        slice_map = SliceMap.query.filter_by(reco_id=reco.id).first()
 
-        map_slice = reco.maps_slices[0]
-        return send_from_directory(map_slice.path_to_dir, "slice_map.jpg")
+        return send_from_directory( slice_map.path_to_dir, slice_map.name_of_file(slice_map_file_index) )
 
     except Exception as e:
-        app.logger.error("Crashed query: /reco/{}/map.jpg: Error: {}".format(reco_id, e))
+        app.logger.error("Crashed query: /reco/{}/slicemap: Error: {}".format(reco_id, e))
         return render_template('error.html', error_message=e)
 
-@app.route('/reco/<int:reco_id>/slice/<int:number>')
-def get_slice(reco_id, number):
+@app.route('/reco/<int:dataset_id>/slice/<int:number>')
+def get_slice(dataset_id, number):
     try:
-        dataset = Reconstruction.query.filter_by(id=reco_id).first()
+        dataset = Reconstruction.query.filter_by(id=dataset_id).first()
         path = os.path.abspath(reco_path(dataset))
         return send_from_directory(os.path.join(path, 'slices_thumbs'), 'map-%05i.jpg' % number)
 
     except Exception as e:
-        app.logger.error("Crashed query: /reco/{}/slice/{}: Error: {}".format(reco_id, number, e))
+        app.logger.error("Crashed query: /reco/{}/slice/{}: Error: {}".format(dataset_id, number, e))
         return render_template('error.html', error_message=e)
 
 @app.route('/reco/<int:reco_id>/render')
@@ -210,22 +216,12 @@ def render(reco_id):
         reco = Reconstruction.query.filter_by(id=reco_id).first()
         slice_map = SliceMap.query.filter_by(reco_id=reco.id).first()
 
-        slice_map = reco.maps_slices[0]
-
-        return render_template('congote_native_webgl.html', reco=reco, slice_map=slice_map)
+        return render_template('render.html', reco=reco, slice_map=slice_map)
 
     except Exception as e:
         app.logger.error("Crashed query: /reco/{}/render: Error: {}".format(reco_id, e))
         return render_template('error.html', error_message=e)
 
-@app.route('/reco/<int:reco_id>/browse')
-def browse(reco_id):
-    try:
-        reco = Reconstruction.query.filter_by(id=reco_id).first()
-        slices_thumbs = SlicesThumbs.query.filter_by(reco_id=reco.id).first()
-
-        return render_template('browse.html', slices_thumbs=slices_thumbs)
-
-    except Exception as e:
-        app.logger.error("Crashed query: /reco/{}/browse: Error: {}".format(reco_id, e))
-        return render_template('error.html', error_message=e)
+@app.route('/reco/<int:dataset_id>/browse')
+def browse(dataset_id):
+    return render_template('browse.html', dataset_id=dataset_id)
